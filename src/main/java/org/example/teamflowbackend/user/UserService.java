@@ -1,6 +1,7 @@
 package org.example.teamflowbackend.user;
 
 import jakarta.persistence.EntityNotFoundException;
+import org.example.teamflowbackend.common.exception.CurrentUserNotFoundException;
 import org.example.teamflowbackend.security.CurrentUser;
 import org.example.teamflowbackend.user.dto.PublicUserResponse;
 import org.example.teamflowbackend.user.dto.UpdateUserRequest;
@@ -29,7 +30,7 @@ public class UserService {
     public UserResponse getCurrentUser() {
         String keycloakId = CurrentUser.keycloakId();
         User user = userRepository.findByKeycloakId(keycloakId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(CurrentUserNotFoundException::new);
 
         return mapToUserResponse(user);
     }
@@ -39,7 +40,7 @@ public class UserService {
     public UserResponse updateCurrentUser(UpdateUserRequest request) {
         String keycloak = CurrentUser.keycloakId();
         User updateUser = userRepository.findByKeycloakId(keycloak)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(CurrentUserNotFoundException::new);
 
         updateUser.setDisplayName(request.displayName());
         updateUser.setUpdatedAt(Instant.now());
@@ -65,7 +66,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public PublicUserResponse getPublicUser(UUID id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new CurrentUserNotFoundException("User not found"));
         return mapToPublicUserResponse(user);
     }
 
