@@ -14,13 +14,27 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, UU
             Pageable pageable
     );
 
+    Page<ProjectMember> findAllByProject_Id(UUID projectId, Pageable pageable);
+
     Optional<ProjectMember> findByProject_IdAndUser_KeycloakId(
             UUID projectId,
             String keycloakId
+    );
+
+    Optional<ProjectMember> findByProject_IdAndUser_Id(
+            UUID projectId,
+            UUID userId
+    );
+
+    boolean existsByProject_IdAndUser_Id(
+            UUID projectId,
+            UUID userId
     );
 
     boolean existsByProject_IdAndUser_KeycloakId(
             UUID projectId,
             String keycloakId
     );
+
+
 }
