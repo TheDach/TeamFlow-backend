@@ -91,6 +91,14 @@ public class GlobalExceptionHandler {
         return pd;
     }
 
+    @ExceptionHandler({TaskNotFoundException.class, CommentNotFoundException.class})
+    public ProblemDetail handleResourceNotFound(RuntimeException e) {
+        ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+        pd.setTitle("Not Found");
+        pd.setDetail(e.getMessage());
+        return pd;
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ProblemDetail handleBadRequest(IllegalArgumentException e) {
         ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
