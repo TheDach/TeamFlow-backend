@@ -44,6 +44,8 @@ public class UserController {
             @PageableDefault(size = 20, sort = "displayName", direction = Sort.Direction.ASC)
             Pageable pageable
     ) {
+        if (pageable.getPageNumber() < 0 || pageable.getPageSize() < 1 || pageable.getPageSize() > 100)
+            throw new IllegalArgumentException("page must be >= 0 and size must be between 1 and 100");
         return userService.searchActiveUsers(name, pageable);
     }
 

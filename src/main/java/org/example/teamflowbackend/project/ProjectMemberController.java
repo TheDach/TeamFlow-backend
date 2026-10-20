@@ -34,6 +34,8 @@ public class ProjectMemberController {
             Pageable pageable,
             @PathVariable UUID id
     ) {
+        if (pageable.getPageNumber() < 0 || pageable.getPageSize() < 1 || pageable.getPageSize() > 100)
+            throw new IllegalArgumentException("page must be >= 0 and size must be between 1 and 100");
         return projectMemberService.getProjectMembers(id, pageable);
     }
 
