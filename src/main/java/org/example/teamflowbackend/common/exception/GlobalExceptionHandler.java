@@ -14,16 +14,26 @@ public class GlobalExceptionHandler {
     private final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
 
+    /* ---------- 409: конфликт с owner ---------- */
+    @ExceptionHandler(OwnerException.class)
+    public ProblemDetail handleOwner(OwnerException e) {
+        log.warn("Owner conflict: {}", e.getMessage());
 
-    /* ---------- 404: проект не найден ---------- */
-    @ExceptionHandler(ProjectNotFoundException.class)
-    public ProblemDetail handleProjectNotFound(ProjectNotFoundException e) {
-        log.warn("Project not found: {}", e.getMessage());
-
-        ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
-        pd.setTitle("Project Not Found");
+        ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.CONFLICT);
+        pd.setTitle("Owner conflict");
         pd.setDetail(e.getMessage());
         return pd;
+    }
+
+    /* ----- 409: пользователь уже в проекте ----- */
+    @ExceptionHandler(UserExistsProjectException.class)
+    public ProblemDetail handleUserExistsProject(UserExistsProjectException e) {
+        log.warn("User already exists in project: {}", e.getMessage());
+
+        ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.CONFLICT);
+        pd.setTitle("User already exists project");
+        pd.setDetail(e.getMessage());
+        return  pd;
     }
 
     /* ---------- 403: нет доступа к проекту ---------- */
@@ -50,6 +60,24 @@ public class GlobalExceptionHandler {
 
 
     /* ---------- 404: любое EntityNotFoundException ---------- */
+    @ExceptionHandler(ProjectNotFoundException.class)
+    public ProblemDetail handleProjectNotFound(ProjectNotFoundException e) {
+        log.warn("Project not found: {}", e.getMessage());
+
+        ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+        pd.setTitle("Project Not Found");
+        pd.setDetail(e.getMessage());
+        return pd;
+    }
+
+    @ExceptionHandler({BusinessConflictException.class})
+    public ProblemDetail handleBusinessConflict(RuntimeException e) {
+        ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.CONFLICT);
+        pd.setTitle("Business conflict");
+        pd.setDetail(e.getMessage());
+        return pd;
+    }
+
     @ExceptionHandler(EntityNotFoundException.class)
     public ProblemDetail handleNotFound(
             EntityNotFoundException e
@@ -60,6 +88,14 @@ public class GlobalExceptionHandler {
         pd.setTitle("Not Found");
         pd.setDetail(e.getMessage());
 
+        return pd;
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ProblemDetail handleBadRequest(IllegalArgumentException e) {
+        ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        pd.setTitle("Bad Request");
+        pd.setDetail(e.getMessage());
         return pd;
     }
 
