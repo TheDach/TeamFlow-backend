@@ -8,7 +8,6 @@ import java.time.LocalDate;
 
 public record TaskUpdateRequest(
         @Size(min = 1, max = 200)
-        @NotBlank
         String title,
 
         @Size(max = 5000)

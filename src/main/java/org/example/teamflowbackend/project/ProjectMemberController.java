@@ -1,5 +1,6 @@
 package org.example.teamflowbackend.project;
 
+import jakarta.validation.Valid;
 import org.example.teamflowbackend.project.dto.ProjectMemberAddRequest;
 import org.example.teamflowbackend.project.dto.ProjectMemberDeleteResponse;
 import org.example.teamflowbackend.project.dto.ProjectMemberResponse;
@@ -42,7 +43,7 @@ public class ProjectMemberController {
     @PostMapping
     public ProjectMemberResponse addMember(
             @PathVariable UUID id,
-            @RequestBody ProjectMemberAddRequest request
+            @Valid @RequestBody ProjectMemberAddRequest request
     ) {
         return projectMemberService.addMemberIntoProject(id, request);
     }

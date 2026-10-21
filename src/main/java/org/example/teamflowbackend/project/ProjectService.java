@@ -1,5 +1,6 @@
 package org.example.teamflowbackend.project;
 
+import org.example.teamflowbackend.common.exception.BusinessConflictException;
 import org.example.teamflowbackend.common.exception.ProjectAccessDeniedException;
 import org.example.teamflowbackend.common.exception.ProjectNotFoundException;
 import org.example.teamflowbackend.project.dto.ProjectCreateRequest;
@@ -87,6 +88,7 @@ public class ProjectService {
     public ProjectResponse updateProject(UUID projectId, ProjectUpdateRequest request) {
         ProjectMember projectMember = getCurrentProjectMember(projectId);
 
+        checkProjectActive(projectMember.getProject());
         checkOwner(projectMember);
 
         Project project = projectMember.getProject();
@@ -148,6 +150,12 @@ public class ProjectService {
     private void checkOwner(ProjectMember projectMember) {
         if (projectMember.getRole() != ProjectMemberRole.OWNER) {
             throw new ProjectAccessDeniedException("Only project owner can perform this action");
+        }
+    }
+
+    private void checkProjectActive(Project project) {
+        if (project.getStatus() == ProjectStatus.ARCHIVED) {
+            throw new BusinessConflictException("Archived project is read-only");
         }
     }
 
