@@ -5,6 +5,7 @@ import org.example.teamflowbackend.project.dto.ProjectMemberAddRequest;
 import org.example.teamflowbackend.project.dto.ProjectMemberDeleteResponse;
 import org.example.teamflowbackend.project.dto.ProjectMemberResponse;
 import org.example.teamflowbackend.security.CurrentUser;
+import org.example.teamflowbackend.task.TaskRepository;
 import org.example.teamflowbackend.user.User;
 import org.example.teamflowbackend.user.UserRepository;
 import org.example.teamflowbackend.user.UserStatus;
@@ -25,6 +26,7 @@ public class ProjectMemberService {
     private final ProjectMemberRepository projectMemberRepository;
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
+    private final TaskRepository taskRepository;
 
     private final Logger log = LoggerFactory.getLogger(ProjectMemberService.class);
 
@@ -32,11 +34,13 @@ public class ProjectMemberService {
     public ProjectMemberService(
             ProjectMemberRepository projectMemberRepository,
             UserRepository userRepository,
-            ProjectRepository projectRepository
+            ProjectRepository projectRepository,
+            TaskRepository taskRepository
     ) {
         this.projectMemberRepository = projectMemberRepository;
         this.userRepository = userRepository;
         this.projectRepository = projectRepository;
+        this.taskRepository = taskRepository;
     }
 
     @Transactional(readOnly = true)
@@ -99,7 +103,7 @@ public class ProjectMemberService {
             throw new OwnerException("You can't delete the project owner id: " + userId);
         }
 
-        //TODO (При удалении участника назначенные ему задачи автоматически становятся неназначенными (assignee_id = NULL).)
+        taskRepository.clearAssignee(projectId, userId);
         projectMemberRepository.delete(memberToDelete);
 
         return new ProjectMemberDeleteResponse(
