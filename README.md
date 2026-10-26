@@ -38,6 +38,10 @@ TeamFlow представляет собой REST API для создания п
 - Spring Data JPA
 - Hibernate
 - Jakarta Bean Validation
+- Spring Security
+- OAuth 2.0 / OpenID Connect
+- Keycloak
+- Docker / Docker Compose
 
 **Database**
 
@@ -52,13 +56,9 @@ TeamFlow представляет собой REST API для создания п
 
 **В разработке**
 
-- Spring Security
-- OAuth 2.0 / OpenID Connect
-- Keycloak
 - JUnit 5 / Mockito
 - Testcontainers
 - OpenAPI / Swagger UI
-- Docker / Docker Compose
 - GitHub Actions
 
 ## Архитектура

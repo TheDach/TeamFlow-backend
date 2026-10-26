@@ -30,7 +30,7 @@ public class UserService {
     public UserResponse getCurrentUser() {
         String keycloakId = CurrentUser.keycloakId();
         User user = userRepository.findByKeycloakId(keycloakId)
-                .orElseThrow(CurrentUserNotFoundException::new);
+                .orElseThrow(() -> new CurrentUserNotFoundException("User not found"));
 
         return mapToUserResponse(user);
     }
@@ -40,7 +40,7 @@ public class UserService {
     public UserResponse updateCurrentUser(UpdateUserRequest request) {
         String keycloak = CurrentUser.keycloakId();
         User updateUser = userRepository.findByKeycloakId(keycloak)
-                .orElseThrow(CurrentUserNotFoundException::new);
+                .orElseThrow(() -> new CurrentUserNotFoundException("User not found"));
 
         updateUser.setDisplayName(request.displayName());
         updateUser.setUpdatedAt(Instant.now());
@@ -69,8 +69,6 @@ public class UserService {
                 .orElseThrow(() -> new CurrentUserNotFoundException("User not found"));
         return mapToPublicUserResponse(user);
     }
-
-
 
 
     private UserResponse mapToUserResponse(User user) {
