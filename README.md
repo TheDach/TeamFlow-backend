@@ -25,6 +25,12 @@ TeamFlow представляет собой REST API для создания п
 - проверка автора комментария и владельца проекта при удалении;
 - ограничения на изменение архивных проектов;
 - единая обработка основных ошибок через `ProblemDetail`;
+- аутентификация через Keycloak по OAuth 2.0 / OpenID Connect;
+- защита REST API через Spring Security OAuth2 Resource Server;
+- проверка JWT access token, выданных Keycloak;
+- идентификация текущего пользователя по JWT claim `sub`;
+- автоматическая привязка существующего пользователя или создание локального `User` при первом запросе;
+- хранение статуса пользователя `ACTIVE` / `BLOCKED` отдельно от Identity Provider;
 - управление схемой PostgreSQL через Flyway;
 - индексы и ограничения целостности на уровне БД.
 
@@ -56,29 +62,16 @@ TeamFlow представляет собой REST API для создания п
 
 **В разработке**
 
-- JUnit 5 / Mockito
-- Testcontainers
-- OpenAPI / Swagger UI
-- GitHub Actions
+- преобразование Keycloak realm roles `USER` / `ADMIN` в Spring Security authorities;
+- административный API для блокировки и разблокировки пользователей;
+- JUnit 5 / Mockito;
+- Testcontainers;
+- OpenAPI / Swagger UI;
+- GitHub Actions.
 
 ## Архитектура
 
 Проект использует подход `package-by-feature`.
-
-```text
-src/main/java/org/example/teamflowbackend
-├── comment
-│   └── dto
-├── common
-│   └── exception
-├── project
-│   └── dto
-├── security
-├── task
-│   └── dto
-└── user
-    └── dto
-```
 
 Основное разделение ответственности:
 
@@ -116,6 +109,20 @@ User
 ### User
 
 Локальный профиль пользователя TeamFlow.
+
+Keycloak отвечает за аутентификацию пользователя и хранение его credentials. TeamFlow не хранит пользовательские пароли. Связь между внешней учётной записью и локальным профилем выполняется через JWT claim `sub`, который сохраняется в `users.keycloak_id`.
+
+Основные поля:
+
+```text
+id
+keycloakId
+email
+displayName
+status
+createdAt
+updatedAt
+```
 
 Статусы:
 
@@ -318,11 +325,77 @@ tasks(project_id, due_date)
 comments(task_id, created_at)
 ```
 
-## Текущая аутентификация
+## Аутентификация и безопасность
 
-В проекте развернут Keycloak в Docker
+Для аутентификации используется Keycloak. Backend TeamFlow работает как OAuth 2.0 Resource Server и не хранит пароли пользователей.
 
-Подклчен Spring Security идентификатор пользователя извлекаться из JWT claim `sub`, полученного от Keycloak.
+Общая схема:
+
+```text
+Пользователь
+    ↓
+Keycloak
+    ↓
+OAuth 2.0 / OpenID Connect
+    ↓
+JWT access token
+    ↓
+Spring Security Resource Server
+    ↓
+SecurityContext
+    ↓
+LocalUserSyncFilter
+    ↓
+users.keycloak_id = JWT.sub
+    ↓
+Controller → Service → Repository
+```
+
+Spring Security получает настройки Identity Provider через `issuer-uri`, проверяет JWT и создаёт `Authentication`. Текущий пользователь определяется по claim `sub`.
+
+`CurrentUser` получает `Jwt` из `SecurityContextHolder`, поэтому бизнес-модули `project`, `task` и `comment` не зависят от Keycloak API напрямую.
+
+При первом аутентифицированном запросе TeamFlow:
+
+1. получает `sub`, `email` и имя из проверенного JWT;
+2. ищет пользователя по `users.keycloak_id`;
+4. если пользователя нет, создаёт локальный профиль;
+5. при последующих запросах использует `sub` как основной внешний идентификатор.
+
+### Локальная конфигурация Keycloak
+
+Для разработки используется отдельный realm:
+
+```text
+teamflow
+```
+
+Для тестирования Authorization Code Flow через Postman используется public OIDC client:
+
+```text
+teamflow-postman
+```
+
+Основные параметры:
+
+```text
+Standard Flow: ON
+Client authentication: OFF
+Direct Access Grants: OFF
+Redirect URI: https://oauth.pstmn.io/v1/callback
+```
+
+Issuer локального realm:
+
+```text
+http://localhost:8180/realms/teamflow
+```
+
+OIDC discovery document:
+
+```text
+http://localhost:8180/realms/teamflow/.well-known/openid-configuration
+```
 
 ## Цель проекта
 
