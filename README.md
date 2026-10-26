@@ -318,42 +318,11 @@ tasks(project_id, due_date)
 comments(task_id, created_at)
 ```
 
-## Запуск проекта
-
-### Требования
-
-Необходимо установить:
-
-- JDK;
-- PostgreSQL.
-
-В проекте используется Gradle Wrapper, поэтому отдельно устанавливать Gradle не требуется.
-
-Создайте PostgreSQL database и настройте datasource.
-
-Пример локальной конфигурации:
-
-```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/teamflowdb
-spring.datasource.username=teamflow
-spring.datasource.password=<local-password>
-
-spring.flyway.enabled=true
-spring.flyway.locations=classpath:db/migration
-spring.flyway.baseline-on-migrate=true
-```
-
-Flyway автоматически создаст и проверит необходимую структуру БД при старте приложения.
-
 ## Текущая аутентификация
 
-Интеграция с Keycloak находится в разработке.
+В проекте развернут Keycloak в Docker
 
-На текущем этапе используется временная development identity для проверки бизнес-логики проектов, задач и комментариев.
-
-После подключения Spring Security идентификатор пользователя будет извлекаться из JWT claim `sub`, полученного от Keycloak.
-
-Production-вариант не будет использовать локально захардкоженного пользователя.
+Подклчен Spring Security идентификатор пользователя извлекаться из JWT claim `sub`, полученного от Keycloak.
 
 ## Цель проекта
 
