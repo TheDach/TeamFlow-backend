@@ -36,5 +36,10 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, UU
             String keycloakId
     );
 
+    Optional<ProjectMember> findByProject_IdAndRole(
+            UUID projectId,
+            ProjectMemberRole projectMemberRole
+    );
+
 
 }

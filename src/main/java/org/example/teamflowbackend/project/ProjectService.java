@@ -47,7 +47,7 @@ public class ProjectService {
         Instant now = Instant.now();
 
         Project project = new Project();
-        project.setName(request.name());
+        project.setName(request.name().trim());
         project.setDescription(request.description());
         project.setOwner(currentUser);
         project.setStatus(ProjectStatus.ACTIVE);
@@ -127,12 +127,22 @@ public class ProjectService {
 
 
     private ProjectResponse mapToResponseProject(Project project) {
+        ProjectMember ownerMember = projectMemberRepository
+                .findByProject_IdAndRole(
+                        project.getId(),
+                        ProjectMemberRole.OWNER
+                )
+                .orElseThrow(() ->
+                        new IllegalStateException(
+                                "Project owner membership is missing"
+                        )
+                );
         return new ProjectResponse(
                 project.getId(),
                 project.getName(),
                 project.getDescription(),
                 project.getStatus(),
-                project.getOwner().getId(),
+                ownerMember.getUser().getId(),
                 project.getCreatedAt()
         );
     }
