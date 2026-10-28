@@ -48,7 +48,13 @@ public class TaskService {
         ProjectMember current = getCurrentProjectMember(projectId);
         checkProjectActive(current.getProject());
 
-        User assignee = existsUserIntoProject(projectId, request.assigneeId());
+        User assignee = null;
+        if (request.assigneeId() != null) {
+            assignee = existsUserIntoProject(
+                    projectId,
+                    request.assigneeId()
+            );
+        }
 
         Instant now = Instant.now();
         Task task = new Task();
@@ -167,7 +173,7 @@ public class TaskService {
             throw new ProjectAccessDeniedException("Only project owner can delete tasks");
 
         taskRepository.delete(task);
-        return new TaskDeleteResponse (
+        return new TaskDeleteResponse(
                 taskId,
                 task.getTitle(),
                 task.getDescription()
