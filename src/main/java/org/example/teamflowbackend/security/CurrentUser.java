@@ -13,7 +13,10 @@ public class CurrentUser {
 
 
     public static Jwt jwt() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Authentication authentication = SecurityContextHolder
+                .getContext()
+                .getAuthentication();
+
 
         if (!(authentication instanceof JwtAuthenticationToken jwtAuthenticationToken)
                 || !authentication.isAuthenticated()) {
