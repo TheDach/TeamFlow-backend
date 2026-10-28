@@ -2,6 +2,7 @@ package org.example.teamflowbackend.user;
 
 import jakarta.persistence.EntityNotFoundException;
 import org.example.teamflowbackend.common.exception.CurrentUserNotFoundException;
+import org.example.teamflowbackend.common.exception.UserNotFoundException;
 import org.example.teamflowbackend.security.CurrentUser;
 import org.example.teamflowbackend.user.dto.PublicUserResponse;
 import org.example.teamflowbackend.user.dto.UpdateUserRequest;
@@ -42,7 +43,7 @@ public class UserService {
         User updateUser = userRepository.findByKeycloakId(keycloak)
                 .orElseThrow(() -> new CurrentUserNotFoundException("User not found"));
 
-        updateUser.setDisplayName(request.displayName());
+        updateUser.setDisplayName(request.displayName().trim());
         updateUser.setUpdatedAt(Instant.now());
         userRepository.save(updateUser);
 
@@ -57,7 +58,11 @@ public class UserService {
         if (displayName == null || displayName.isBlank()) {
             page = userRepository.findAllByStatus(UserStatus.ACTIVE, pageable);
         } else {
-            page = userRepository.findAllByStatusAndDisplayNameContainingIgnoreCase(UserStatus.ACTIVE, displayName, pageable);
+            page = userRepository.findAllByStatusAndDisplayNameContainingIgnoreCase(
+                    UserStatus.ACTIVE,
+                    displayName.trim(),
+                    pageable
+            );
         }
         return page.map(this::mapToUserSearchItem);
     }
@@ -66,7 +71,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public PublicUserResponse getPublicUser(UUID id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new CurrentUserNotFoundException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException(id));
         return mapToPublicUserResponse(user);
     }
 
